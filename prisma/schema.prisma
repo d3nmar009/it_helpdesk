@@ -1,0 +1,270 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+//////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////
+
+
+
+enum TicketStatus {
+  PENDING_APPROVAL
+  APPROVED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REJECTED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TicketCategory {
+  HARDWARE
+  SOFTWARE
+  NETWORK
+  OTHERS
+}
+enum TaskStatus {
+  pending
+  accepted
+  completed
+  cancelled
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+  urgent
+}
+//////////////////////////////////////////////////
+// MODELS
+//////////////////////////////////////////////////
+
+model Users {
+  id          String   @id @default(uuid())
+  reportsToId String? @map("reports_to_id") @db.Char(36)
+  name        String
+  username       String   @unique
+  email       String   @unique
+  password       String
+  departmentId  String? @map("department_id")
+  roleId        String? @map("role_id")
+
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  department  Departments? @relation(fields: [departmentId], references: [id])
+  role        role? @relation(fields: [roleId], references: [id])
+  // Relations
+  ticketsCreated  Ticket[] @relation("CreatedTickets")
+  ticketsAssigned Ticket[] @relation("AssignedTickets")
+  ticketsApproved Ticket[] @relation("ApprovedTickets")
+  logs            TicketLog[]
+  notifications   Notification[]
+
+  // Relations
+  createdTasks  Task[]   @relation("CreatedTasks")
+  assignedTasks Task[]   @relation("AssignedTasks")
+
+  taskComments      TaskComment[]
+    taskAttachments   TaskAttachment[]
+    reportsToUsers Users[] @relation("ReportsTo")
+    reportsTo Users? @relation(fields: [reportsToId], references: [id], name: "ReportsTo")
+
+}
+model Departments {
+  id          String   @id @default(uuid())
+  name        String
+  users Users[]
+}
+
+model role {
+  id          String   @id @default(uuid())
+  name        String
+  users Users[]
+}
+model Ticket {
+  id              String         @id @default(uuid())
+  ticketNo        String         @unique @map("ticket_no")
+  title           String
+  description     String
+  categoryId        String @map("category_id")
+  category        TicketCategories @relation(fields: [categoryId], references: [id])
+  priority        TicketPriority?
+  status          TicketStatus   @default(PENDING_APPROVAL)
+
+  // User Relations
+  createdById     String @map("created_by_id")
+  assignedToId    String? @map("assigned_to_id")
+  approvedById    String? @map("approved_by_id")
+
+  createdBy       Users           @relation("CreatedTickets", fields: [createdById], references: [id])
+  assignedTo      Users?          @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  approvedBy      Users?          @relation("ApprovedTickets", fields: [approvedById], references: [id])
+
+  // Dates
+  createdAt       DateTime       @default(now()) @map("created_at")
+  approvedAt      DateTime? @map("approved_at")
+  acceptedAt      DateTime? @map("accepted_at")
+  forwardedAt     DateTime? @map("forwarded_at")
+  resolvedAt      DateTime? @map("resolved_at")
+  closedAt        DateTime? @map("closed_at")
+  rejectedAt      DateTime? @map("rejected_at")
+
+  resolutionNotes String? @map("resolution_notes")
+  isDeleted       Boolean  @default(false) @map("is_deleted")
+
+  // Relations  
+  attachments     Attachment[]
+  logs            TicketLog[]
+  notifications   Notification[]
+
+  @@index([status])
+  @@index([categoryId])
+  @@map("tickets")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  ticketId  String   @map("ticket_id")
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@index([ticketId])
+  @@map("notifications")
+}
+model TicketCategories {
+  id          String   @id @default(uuid())
+  name        String
+  tickets Ticket[]
+
+  @@index([name])
+  @@map("ticket_category")
+}
+model Attachment {
+  id           String   @id @default(uuid())
+  ticketId     String @map("ticket_id")
+  fileName     String @map("file_name")
+  filePath     String @map("file_path")
+  mimeType     String @map("mime_type")
+  uploadedAt   DateTime @default(now()) @map("uploaded_at")
+
+  ticket       Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  @@map("attachments")
+}
+
+model TicketLog {
+  id          String      @id @default(uuid())
+  ticketId    String @map("ticket_id")
+  action String?
+  remarks     String?
+  performedById String? @map("performed_by_id")
+
+  ticket      Ticket      @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  performedBy Users?      @relation(fields: [performedById], references: [id])
+
+  @@map("ticket_logs")
+}
+
+//////////////////////////////////////////////////////
+// TASKS
+//////////////////////////////////////////////////////
+
+model Task {
+  id            String        @id @default(uuid()) @db.Char(36)
+  title         String        @db.VarChar(255)
+  description   String?       @db.Text
+
+  status        TaskStatus    @default(pending)
+  priority      TaskPriority  @default(medium)
+
+  assignedToId  String?       @map("assigned_to_id") @db.Char(36)
+  createdById   String        @map("created_by_id") @db.Char(36)
+
+  acceptedAt    DateTime?     @map("accepted_at")
+  completedAt   DateTime?     @map("completed_at")
+  cancelledAt   DateTime?     @map("cancelled_at")
+
+  isDeleted     Boolean       @default(false) @map("is_deleted")
+
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  createdBy     Users          @relation("CreatedTasks", fields: [createdById], references: [id])
+  assignedTo    Users?         @relation("AssignedTasks", fields: [assignedToId], references: [id])
+
+  comments      TaskComment[]
+  attachments   TaskAttachment[]
+
+  @@index([createdById])
+  @@index([assignedToId])
+  @@map("tasks")
+}
+
+
+//////////////////////////////////////////////////////
+// TASK COMMENTS
+//////////////////////////////////////////////////////
+
+model TaskComment {
+  id        String   @id @default(uuid()) @db.Char(36)
+
+  taskId    String?  @map("task_id") @db.Char(36)
+  userId    String?  @map("user_id") @db.Char(36)
+
+  comment   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task      Task?    @relation(fields: [taskId], references: [id])
+  user      Users?    @relation(fields: [userId], references: [id])
+
+  @@index([taskId])
+  @@index([userId])
+  @@map("task_comments")
+}
+
+//////////////////////////////////////////////////////
+// TASK ATTACHMENTS
+//////////////////////////////////////////////////////
+
+model TaskAttachment {
+  id            BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+
+  taskId        String?  @map("task_id") @db.Char(36)
+  uploadedById  String?  @map("uploaded_by_id") @db.Char(36)
+
+  filePath      String   @map("file_path") @db.VarChar(500)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  task          Task?    @relation(fields: [taskId], references: [id])
+  uploadedBy    Users?    @relation(fields: [uploadedById], references: [id])
+
+  @@index([taskId])
+  @@index([uploadedById])
+  @@map("task_attachments")
+}
