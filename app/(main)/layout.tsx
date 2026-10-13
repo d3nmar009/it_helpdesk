@@ -16,8 +16,10 @@ export default async function DashboardLayout({
   return (
       <SidebarProvider>
         <AppSidebar role={session.role ?? "user"} />
-        <SidebarInset className="px-5 min-h-screen flex flex-col">
-          <Navbar />
+        <SidebarInset className="app-shell h-svh min-w-0 overflow-hidden flex flex-col bg-slate-50 dark:bg-background">
+          <div className="no-print sticky top-0 z-20 shrink-0">
+            <Navbar />
+          </div>
           <Toaster
             position="top-center"
             richColors
@@ -37,7 +39,7 @@ export default async function DashboardLayout({
               },
             }}
           />
-          <div className="flex-1 flex flex-col">
+          <div className="app-scroll flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-3 sm:px-5">
             {children}
           </div>
         </SidebarInset>

@@ -7,6 +7,7 @@ import { ticketUpdateSchema } from "@/lib/formValidationSchemas";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import { Prisma } from "@/generated/prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,6 +48,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
           id: true,
           action: true,
           remarks: true,
+          performedBy: { select: { id: true, name: true } },
         },
       },
     },
@@ -54,10 +56,30 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   if (!ticket) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const commentRows = await prisma.$queryRaw<Array<{ id: string; userId: string; comment: string; createdAt: Date }>>(
+    Prisma.sql`
+      SELECT id, user_id as userId, comment, created_at as createdAt
+      FROM ticket_comments
+      WHERE ticket_id = ${id}
+      ORDER BY created_at DESC
+    `,
+  );
+  const userIds = Array.from(new Set(commentRows.map((r) => r.userId).filter(Boolean)));
+  const users = userIds.length
+    ? await prisma.users.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true } })
+    : [];
+  const userMap = new Map(users.map((u) => [u.id, u.name]));
+
   return NextResponse.json({
     ...ticket,
     createdAt: ticket.createdAt.toISOString(),
     attachments: ticket.attachments.map((a) => ({ ...a, uploadedAt: a.uploadedAt.toISOString() })),
+    comments: commentRows.map((c) => ({
+      id: c.id,
+      comment: c.comment,
+      createdAt: new Date(c.createdAt).toISOString(),
+      user: { id: c.userId, name: userMap.get(c.userId) ?? "Unknown user" },
+    })),
   });
 }
 

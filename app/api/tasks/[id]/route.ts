@@ -145,9 +145,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   }
 
   const parsed = { success: true as const, data: parsedAction! };
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten() }, { status: 400 });
-  }
 
   const before = await prisma.task.findFirst({
     where: { id, isDeleted: false },

@@ -283,8 +283,8 @@ export default function TicketAssignmentManagement({
   const pageSizeOptions = useMemo(() => getRowsPerPageOptions(totalRows, [20, 50]), [totalRows]);
 
   return (
-    <div className="p-4 sm:p-8">
-      <div className="mb-6">
+    <div className="flex min-w-0 flex-col gap-4 py-4 sm:py-6 lg:min-h-0 lg:flex-1">
+      <div className="shrink-0">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
@@ -301,13 +301,13 @@ export default function TicketAssignmentManagement({
       </div>
 
       {error ? (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
+        <div className="shrink-0 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
           <p className="text-sm font-medium text-red-700 dark:text-red-300">{error}</p>
         </div>
       ) : null}
 
-      <Card className="shadow-lg border-0 bg-white dark:bg-gray-800">
-        <CardHeader className="pb-4">
+      <Card className="min-w-0 gap-4 py-4 shadow-lg border-0 bg-white dark:bg-gray-800 lg:min-h-0 lg:flex-1">
+        <CardHeader className="shrink-0 px-4 sm:px-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <CardTitle className="flex items-center gap-3 text-lg">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -383,45 +383,45 @@ export default function TicketAssignmentManagement({
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1500px] border-collapse">
-              <thead>
+        <CardContent className="flex min-w-0 flex-col px-4 sm:px-6 lg:min-h-0 lg:flex-1">
+          <div className="max-h-[70svh] min-h-0 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 lg:max-h-none lg:flex-1">
+            <table className="w-full min-w-[1200px] border-collapse">
+              <thead className="sticky top-0 z-10">
                 <tr className="bg-gray-50 dark:bg-gray-700">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Ticket No
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Title
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Description
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Created By
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Department
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Category
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Priority
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Action
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Remarks
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Created
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
+                  <th className="px-2 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Actions
                   </th>
                 </tr>
@@ -429,14 +429,14 @@ export default function TicketAssignmentManagement({
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredTickets.length === 0 ? (
                   <tr>
-                    <td className="px-4 py-8 text-center text-sm text-gray-600 dark:text-gray-300" colSpan={12}>
+                    <td className="px-2 py-6 text-center text-sm text-gray-600 dark:text-gray-300" colSpan={12}>
                       No assigned tickets found.
                     </td>
                   </tr>
                 ) : (
                   pageTickets.map((t) => (
                     <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <td className="px-2 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">
                         <button
                           type="button"
                           onClick={() => openDetails(t)}
@@ -447,33 +447,33 @@ export default function TicketAssignmentManagement({
                           {t.ticketNo}
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 max-w-[360px]">
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[360px]">
                         <div className="truncate">{t.title}</div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 max-w-[420px]">
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[420px]">
                         <div className="truncate">{t.description}</div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{t.createdBy.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">{t.createdBy.name}</td>
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
                         {t.createdBy.department?.name ?? "-"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{t.category.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">{t.category.name}</td>
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
                         <PriorityBadge priority={t.priority} />
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
                         <StatusBadge status={t.status} />
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 max-w-[240px]">
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[240px]">
                         <div className="truncate">{t.logs?.[0]?.action ?? "-"}</div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 max-w-[320px]">
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[320px]">
                         <div className="truncate">{t.logs?.[0]?.remarks ?? "-"}</div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                      <td className="px-2 py-2 text-sm text-gray-900 dark:text-gray-100">
                         {new Date(t.createdAt).toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-2 py-2 text-center">
                         <div className="flex items-center justify-center">
                           {t.status === "REJECTED" || t.status === "CLOSED" || t.status === "RESOLVED" ? null : (
                             <Button
@@ -501,7 +501,7 @@ export default function TicketAssignmentManagement({
           </div>
 
           {/* Pagination */}
-          <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+          <div className="mt-4 flex shrink-0 items-center justify-between gap-3 flex-wrap">
             <p className="text-xs text-slate-600 dark:text-slate-300">
               Showing <span className="font-semibold">{totalRows ? startIndex + 1 : 0}</span>–
               <span className="font-semibold">{endIndex}</span> of{" "}

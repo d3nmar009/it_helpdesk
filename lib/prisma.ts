@@ -5,28 +5,34 @@ declare global {
   var prismaGlobal: PrismaClient | undefined;
 }
 
-function createPrismaClient() {
-  const raw = process.env.DATABASE_CONNECTION_LIMIT;
-  const parsed = raw ? Number(raw) : 20;
-  // IMPORTANT: For this MariaDB adapter, 0 results in pool limit=0 (no connections).
-  // Use a positive number; override via DATABASE_CONNECTION_LIMIT.
-  const connectionLimit = Number.isFinite(parsed) && parsed > 0 ? parsed : 20;
+function intFromEnv(name: string, fallback: number, min: number) {
+  const parsed = Number(process.env[name]);
+  return Number.isInteger(parsed) && parsed >= min ? parsed : fallback;
+}
 
-  const adapter = new PrismaMariaDb({
+export function databasePoolConfig() {
+  // IMPORTANT: For this MariaDB adapter, connectionLimit 0 results in no connections at all.
+  const connectionLimit = intFromEnv("DATABASE_CONNECTION_LIMIT", 10, 1);
+  return {
     host: process.env.DATABASE_HOST,
+    port: intFromEnv("DATABASE_PORT", 3306, 1),
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
     connectionLimit,
-  });
-
-  return new PrismaClient({ adapter });
+    // The mariadb driver defaults minimumIdle to connectionLimit, which opens and holds every
+    // connection of the pool at startup. Keep only a few warm and open the rest on demand.
+    minimumIdle: Math.min(intFromEnv("DATABASE_MIN_IDLE", 1, 0), connectionLimit),
+    // Seconds before connections above minimumIdle are closed.
+    idleTimeout: intFromEnv("DATABASE_IDLE_TIMEOUT", 60, 1),
+  };
 }
 
-export const prisma = globalThis.prismaGlobal ?? createPrismaClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalThis.prismaGlobal = prisma;
+function createPrismaClient() {
+  return new PrismaClient({ adapter: new PrismaMariaDb(databasePoolConfig()) });
 }
+
+// Cached in production too: every extra PrismaClient opens its own connection pool.
+export const prisma = (globalThis.prismaGlobal ??= createPrismaClient());
 
 export default prisma;

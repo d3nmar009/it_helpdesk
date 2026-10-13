@@ -2,10 +2,12 @@ import { prisma } from "@/lib/prisma";
 import TicketManagement from "./ticket-management";
 import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { SessionDataHelpdesk, sessionOptions } from "@/lib/sessionOption";
 
 export default async function TicketPage() {
   const session = await getIronSession<SessionDataHelpdesk>(await cookies(), sessionOptions);
+  if (!session.isLoggedIn || !session.userId) redirect("/sign-in");
   const categories = await prisma.ticketCategories.findMany({
     select: { id: true, name: true },
     orderBy: { name: "asc" },

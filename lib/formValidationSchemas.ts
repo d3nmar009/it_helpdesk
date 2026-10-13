@@ -68,6 +68,21 @@ export const userAdminUpdateSchema = z.object({
 });
 export type UserAdminUpdateSchema = z.infer<typeof userAdminUpdateSchema>;
 
+// Max 20 because the sign-in form (userSchema) rejects longer passwords.
+export const userPasswordResetSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters" })
+      .max(20, { message: "Password must be at most 20 characters" }),
+    confirmPassword: z.string().min(1, { message: "Please confirm the password" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+export type UserPasswordResetSchema = z.infer<typeof userPasswordResetSchema>;
+
 export const departmentSchema = z.object({
   name: z.string().min(2, { message: "Department name is required" }).max(80),
 });

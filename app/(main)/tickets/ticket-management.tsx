@@ -349,15 +349,15 @@ export default function TicketManagement({
   }
 
   return (
-    <div className="p-4 sm:p-8">
-       <div className="mb-6">
+    <div className="flex min-w-0 flex-col gap-4 py-4 sm:py-6 lg:min-h-0 lg:flex-1">
+      <div className="shrink-0">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
               <Ticket className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ticket Management</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tickets</h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Create, update, and manage helpdesk tickets.
               </p>
@@ -367,13 +367,13 @@ export default function TicketManagement({
       </div>
 
       {error ? (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
+        <div className="shrink-0 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
           <p className="text-sm font-medium text-red-700 dark:text-red-300">{error}</p>
         </div>
       ) : null}
 
-      <Card className="shadow-lg border-0 bg-white dark:bg-gray-800">
-        <CardHeader className="pb-4">
+      <Card className="min-w-0 gap-4 py-4 shadow-lg border-0 bg-white dark:bg-gray-800 lg:min-h-0 lg:flex-1">
+        <CardHeader className="shrink-0 px-4 sm:px-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <CardTitle className="flex items-center gap-3 text-lg">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -415,10 +415,10 @@ export default function TicketManagement({
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
+        <CardContent className="flex min-w-0 flex-col px-4 sm:px-6 lg:min-h-0 lg:flex-1">
+          <div className="max-h-[70svh] min-h-0 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 lg:max-h-none lg:flex-1">
             <table className="w-full min-w-[1100px] border-collapse">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="bg-gray-50 dark:bg-gray-700">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b dark:border-gray-600">
                     Ticket No
@@ -538,7 +538,7 @@ export default function TicketManagement({
           </div>
 
           {/* Pagination */}
-          <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+          <div className="mt-4 flex shrink-0 items-center justify-between gap-3 flex-wrap">
             <p className="text-xs text-slate-600 dark:text-slate-300">
               Showing <span className="font-semibold">{totalRows ? startIndex + 1 : 0}</span>–
               <span className="font-semibold">{endIndex}</span> of{" "}

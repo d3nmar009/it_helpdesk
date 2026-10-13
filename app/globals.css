@@ -71,14 +71,14 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0.002 247.839);
-  --sidebar-foreground: oklch(0.13 0.028 261.692);
-  --sidebar-primary: oklch(0.21 0.034 264.665);
-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-accent: oklch(0.967 0.003 264.542);
-  --sidebar-accent-foreground: oklch(0.21 0.034 264.665);
-  --sidebar-border: oklch(0.928 0.006 264.531);
-  --sidebar-ring: oklch(0.707 0.022 261.325);
+  --sidebar: oklch(0.25 0.065 264);
+  --sidebar-foreground: oklch(0.9 0.02 255);
+  --sidebar-primary: oklch(0.62 0.19 259);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.32 0.075 264);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.62 0.19 259);
 }
 
 .dark {
@@ -105,14 +105,14 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.034 264.665);
-  --sidebar-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-accent: oklch(0.278 0.033 256.848);
-  --sidebar-accent-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar: oklch(0.17 0.04 265);
+  --sidebar-foreground: oklch(0.9 0.02 255);
+  --sidebar-primary: oklch(0.58 0.2 262);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.25 0.05 264);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.58 0.2 262);
 }
 
 @layer base {
@@ -121,5 +121,35 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Print: on accomplishment page, show only the report table */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  /* The app shell is viewport-height with an inner scroller; unclip it so every page prints */
+  [data-slot="sidebar-wrapper"],
+  .app-shell,
+  .app-scroll {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  /* When .print-content exists (accomplishment report), hide rest of page */
+  body:has(.print-content) * {
+    visibility: hidden;
+  }
+  body:has(.print-content) .print-content,
+  body:has(.print-content) .print-content * {
+    visibility: visible;
+  }
+  body:has(.print-content) .print-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
   }
 }

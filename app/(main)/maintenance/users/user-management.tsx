@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { Edit, Search, Users as UsersIcon } from "lucide-react";
+import { Edit, Eye, EyeOff, KeyRound, Search, Users as UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { userAdminUpdateSchema, type UserAdminUpdateSchema } from "@/lib/formValidationSchemas";
+import {
+  userAdminUpdateSchema,
+  userPasswordResetSchema,
+  type UserAdminUpdateSchema,
+  type UserPasswordResetSchema,
+} from "@/lib/formValidationSchemas";
 import { getRowsPerPageOptions, normalizeRowsPerPage, type RowsPerPage } from "@/lib/pagination";
 
 type RoleRow = { id: string; name: string };
@@ -76,6 +81,9 @@ export default function UserMaintenance({
   const [activeUser, setActiveUser] = useState<UserRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [passwordUser, setPasswordUser] = useState<UserRow | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -99,6 +107,43 @@ export default function UserMaintenance({
   } = useForm<UserAdminUpdateSchema>({
     resolver: zodResolver(userAdminUpdateSchema),
     defaultValues: { roleId: roles[0]?.id ?? "", isActive: true },
+  });
+
+  const passwordForm = useForm<UserPasswordResetSchema>({
+    resolver: zodResolver(userPasswordResetSchema),
+    defaultValues: { password: "", confirmPassword: "" },
+  });
+
+  function openChangePassword(u: UserRow) {
+    setPasswordUser(u);
+    setPasswordError(null);
+    setShowPassword(false);
+    passwordForm.reset({ password: "", confirmPassword: "" });
+  }
+
+  const onChangePassword = passwordForm.handleSubmit((values) => {
+    if (!passwordUser) return;
+    startTransition(async () => {
+      try {
+        setPasswordError(null);
+        const res = await fetch(`/api/maintenance/users/${passwordUser.id}/password`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
+        if (!res.ok) {
+          const j = (await res.json().catch(() => null)) as any;
+          throw new Error(j?.error ?? `Password change failed (${res.status})`);
+        }
+
+        toast.success(`Password changed for ${passwordUser.username}`);
+        setPasswordUser(null);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Unknown error";
+        setPasswordError(msg);
+        toast.error(msg);
+      }
+    });
   });
 
   async function refreshUsers() {
@@ -275,17 +320,30 @@ export default function UserMaintenance({
                     </TableCell>
                     <TableCell>{new Date(u.createdAt).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEdit(u)}
-                        disabled={!canManage || isPending}
-                        title={!canManage ? "Only ADMIN can edit users" : "Edit user"}
-                      >
-                        <Edit />
-                        Update
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEdit(u)}
+                          disabled={!canManage || isPending}
+                          title={!canManage ? "Only ADMIN can edit users" : "Edit user"}
+                        >
+                          <Edit />
+                          Update
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openChangePassword(u)}
+                          disabled={!canManage || isPending}
+                          title={!canManage ? "Only ADMIN can change passwords" : "Change password"}
+                        >
+                          <KeyRound />
+                          Password
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -395,6 +453,80 @@ export default function UserMaintenance({
               </Button>
               <Button type="submit" disabled={!canManage || isPending}>
                 Save
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={passwordUser !== null} onOpenChange={(o) => !o && setPasswordUser(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5" />
+              Change Password
+            </DialogTitle>
+            <DialogDescription>
+              {passwordUser ? `Set a new password for ${passwordUser.name} (${passwordUser.username}).` : ""}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form className="grid gap-4" onSubmit={onChangePassword}>
+            {passwordError ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">{passwordError}</p>
+              </div>
+            ) : null}
+
+            <div className="grid gap-2">
+              <Label htmlFor="new-password">New password</Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="8 to 20 characters"
+                  className="pr-10"
+                  {...passwordForm.register("password")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {passwordForm.formState.errors.password?.message ? (
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {passwordForm.formState.errors.password.message}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="confirm-new-password">Confirm new password</Label>
+              <Input
+                id="confirm-new-password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Re-enter the new password"
+                {...passwordForm.register("confirmPassword")}
+              />
+              {passwordForm.formState.errors.confirmPassword?.message ? (
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {passwordForm.formState.errors.confirmPassword.message}
+                </p>
+              ) : null}
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPasswordUser(null)} disabled={isPending}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!canManage || isPending}>
+                {isPending ? "Saving..." : "Change password"}
               </Button>
             </DialogFooter>
           </form>

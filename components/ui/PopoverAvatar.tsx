@@ -1,92 +1,68 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { logout } from "@/lib/auth"
 import { LogOut, User, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
-import { getAvatarUrl } from '@/lib/avatarUtils'
 
-interface UserData {
-  id: number;
-  username: string;
-  firstname: string;
-  lastname: string;
-  avatar?: string;
-}
+const getInitials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase();
 
-const PopoverAvatar = () => {
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/users');
-        if (response.ok) {
-          const data = await response.json();
-          setUserData(data.user);
-        } else {
-          console.error('Failed to fetch user data');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, []);
-
-  const getInitials = (firstname: string, lastname: string) => {
-    return `${firstname?.charAt(0) || ''}${lastname?.charAt(0) || ''}`.toUpperCase();
-  };
-
-  if (loading) {
-    return (
-      <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
-    );
-  }
+const PopoverAvatar = ({ name, username, role }: { name?: string | null; username?: string | null; role?: string | null }) => {
+  const displayName = name || username || "User";
+  const initials = getInitials(displayName);
 
   return (
     <div>
       <Popover>
         <PopoverTrigger asChild className="cursor-pointer">
-          <Avatar className="w-9 h-9 border-2 border-gray-200">
-            <AvatarImage 
-              src={getAvatarUrl(userData?.avatar)} 
-              alt={userData?.username || 'User'} 
-            />
-            <AvatarFallback className="text-sm font-semibold">
-              {userData ? getInitials(userData.firstname, userData.lastname) : <User className="w-4 h-4" />}
+          <Avatar className="size-9 ring-2 ring-blue-500/30 ring-offset-2 ring-offset-white transition hover:ring-blue-500/60 dark:ring-offset-slate-900">
+            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-600 text-sm font-semibold text-white">
+              {initials || <User className="w-4 h-4" />}
             </AvatarFallback>
           </Avatar>
         </PopoverTrigger>
-        <PopoverContent className="w-50 ml-[-100px] p-3">
-          <div className="space-y-2">
-            <div className="text-sm font-medium">
-              {userData?.firstname} {userData?.lastname}
+        <PopoverContent align="end" sideOffset={10} className="w-64 overflow-hidden p-0">
+          <div className="flex items-center gap-3 bg-gradient-to-br from-blue-600 to-indigo-700 px-4 py-4 text-white">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-semibold ring-1 ring-white/30">
+              {initials || <User className="w-4 h-4" />}
             </div>
-            <div className="text-xs text-gray-500">
-              {userData?.username}
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{displayName}</p>
+              <p className="truncate text-xs text-blue-100">
+                {username ? `@${username}` : null}
+                {username && role ? " · " : null}
+                {role?.replace(/_/g, " ")}
+              </p>
             </div>
-            <div className="space-y-1">
-              <Link href="/profile">
-                <Button variant='ghost' className="w-full justify-start">
-                  <UserIcon className="w-4 h-4 mr-2" />
-                  Profile
-                </Button>
-              </Link>
-              <Button variant='ghost' onClick={() => logout()} className="w-full justify-start">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
+          </div>
+          <div className="space-y-1 p-2">
+            <Link href="/profile">
+              <Button variant='ghost' className="w-full justify-start">
+                <UserIcon className="w-4 h-4 mr-2" />
+                Profile
               </Button>
-            </div>
+            </Link>
+            <Button
+              variant='ghost'
+              onClick={() => logout()}
+              className="w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </PopoverContent>
       </Popover>

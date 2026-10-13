@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import SignupForm from "./SignupForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function SignUpPage() {
   const departments = await prisma.departments.findMany({
     select: { id: true, name: true },

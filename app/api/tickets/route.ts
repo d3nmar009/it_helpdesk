@@ -23,6 +23,7 @@ type TicketListRow = {
   category: { id: string; name: string };
   assignedTo: { id: string; name: string } | null;
   createdBy: { id: string; name: string; department: { id: string; name: string } | null };
+  logs: { action: string | null; remarks: string | null }[];
   _count: { attachments: number };
 };
 
@@ -114,9 +115,23 @@ export async function GET(req: Request) {
       category: { select: { id: true, name: true } },
       assignedTo: { select: { id: true, name: true } },
       createdBy: { select: { id: true, name: true, department: { select: { id: true, name: true } } } },
+      logs: { take: 1, select: { action: true, remarks: true } },
       _count: { select: { attachments: true } },
     },
   })) as unknown as TicketListRow[];
+
+  const ticketIds = tickets.map((t) => t.id);
+  const commentCounts = ticketIds.length
+    ? await prisma.$queryRaw<Array<{ ticketId: string; cnt: bigint | number }>>(Prisma.sql`
+        SELECT ticket_id as ticketId, COUNT(*) as cnt
+        FROM ticket_comments
+        WHERE ticket_id IN (${Prisma.join(ticketIds)})
+        GROUP BY ticket_id
+      `)
+    : [];
+  const commentCountMap = new Map<string, number>(
+    commentCounts.map((r) => [r.ticketId, typeof r.cnt === "bigint" ? Number(r.cnt) : Number(r.cnt)]),
+  );
 
   return NextResponse.json(
     tickets.map((t) => ({
@@ -131,6 +146,9 @@ export async function GET(req: Request) {
       createdBy: t.createdBy,
       createdAt: t.createdAt.toISOString(),
       attachmentCount: t._count.attachments ?? 0,
+      action: t.logs?.[0]?.action ?? null,
+      remarks: t.logs?.[0]?.remarks ?? null,
+      commentCount: commentCountMap.get(t.id) ?? 0,
     })),
   );
 }

@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
+import { getIronSession } from "iron-session";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { sessionOptions, type SessionDataHelpdesk } from "@/lib/sessionOption";
 
 export const runtime = "nodejs";
 
 export async function GET() {
+  const session = await getIronSession<SessionDataHelpdesk>(await cookies(), sessionOptions);
+  if (!session.isLoggedIn) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const users = await prisma.users.findMany({
       orderBy: { createdAt: "desc" },

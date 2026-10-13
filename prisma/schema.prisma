@@ -78,6 +78,7 @@ model Users {
   ticketsAssigned Ticket[] @relation("AssignedTickets")
   ticketsApproved Ticket[] @relation("ApprovedTickets")
   logs            TicketLog[]
+  ticketComments  TicketComment[]
   notifications   Notification[]
 
   // Relations
@@ -135,6 +136,7 @@ model Ticket {
   // Relations  
   attachments     Attachment[]
   logs            TicketLog[]
+  comments        TicketComment[]
   notifications   Notification[]
 
   @@index([status])
@@ -188,6 +190,21 @@ model TicketLog {
   performedBy Users?      @relation(fields: [performedById], references: [id])
 
   @@map("ticket_logs")
+}
+
+model TicketComment {
+  id        String   @id @default(uuid())
+  ticketId  String   @map("ticket_id")
+  userId    String   @map("user_id")
+  comment   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([userId])
+  @@map("ticket_comments")
 }
 
 //////////////////////////////////////////////////////

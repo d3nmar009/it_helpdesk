@@ -227,11 +227,20 @@ export function NotificationBell({ userId }: { userId?: string }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" size="icon" className="relative" title={title} disabled={isPending}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="relative size-9 rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+          title={title}
+          disabled={isPending}
+        >
           <Bell className="h-5 w-5" />
           {unreadCount ? (
-            <span className="absolute -right-1 -top-1">
-              <Badge className="h-5 min-w-5 justify-center rounded-full px-1 text-[10px]">{unreadCount}</Badge>
+            <span className="absolute -right-0.5 -top-0.5">
+              <Badge className="h-[18px] min-w-[18px] justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] text-white dark:border-slate-900">
+                {unreadCount}
+              </Badge>
             </span>
           ) : null}
         </Button>

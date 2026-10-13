@@ -2,9 +2,10 @@
 
 import { useTheme } from "@/lib/ThemeContext";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Moon, Sun } from "lucide-react";
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { darkMode, toggleDarkMode } = useTheme();
 
   return (
@@ -12,14 +13,17 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleDarkMode}
-      className="rounded-full w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      className={cn(
+        "size-9 rounded-full flex items-center justify-center cursor-pointer text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors",
+        className,
+      )}
       title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
     >
       {darkMode ? (
-        <Sun className="h-4 w-4" />
+        <Sun className="h-5 w-5" />
       ) : (
-        <Moon className="h-4 w-4" />
+        <Moon className="h-5 w-5" />
       )}
     </Button>
   );
-} 
+}

@@ -3,6 +3,7 @@ import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { sessionOptions, type SessionDataHelpdesk } from "@/lib/sessionOption";
+import { Prisma } from "@/generated/prisma/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,10 +43,26 @@ export async function GET() {
     },
   });
 
+  const ticketIds = tickets.map((t) => t.id);
+  const commentCounts = ticketIds.length
+    ? await prisma.$queryRaw<Array<{ ticketId: string; cnt: bigint | number }>>(Prisma.sql`
+        SELECT ticket_id as ticketId, COUNT(*) as cnt
+        FROM ticket_comments
+        WHERE ticket_id IN (${Prisma.join(ticketIds)})
+        GROUP BY ticket_id
+      `)
+    : [];
+  const commentCountMap = new Map<string, number>(
+    commentCounts.map((r) => [r.ticketId, typeof r.cnt === "bigint" ? Number(r.cnt) : Number(r.cnt)]),
+  );
+
   return NextResponse.json(
     tickets.map((t) => ({
       ...t,
       createdAt: t.createdAt.toISOString(),
+      action: t.logs?.[0]?.action ?? null,
+      remarks: t.logs?.[0]?.remarks ?? null,
+      commentCount: commentCountMap.get(t.id) ?? 0,
     })),
   );
 }
